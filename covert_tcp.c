@@ -99,6 +99,8 @@ main(int argc, char **argv)
       ipid=1;
     else if (strcmp(argv[count],"-seq") == 0)
       seq=1;
+    else if (strcmp(argv[count],"-port") == 0)
+      port=1;
     else if (strcmp(argv[count],"-ack") == 0)
       ack=1;
     else if (strcmp(argv[count],"-server") == 0)
@@ -110,7 +112,7 @@ main(int argc, char **argv)
     ipid=1; /* set default encode type if none given */
    else if (ipid+seq+ack !=1)
     {
-    printf("\n\nOnly one encoding/decode flag (-ipid -seq -ack) can be used at a time.\n\n");
+    printf("\n\nOnly one encoding/decode flag (-ipid -seq -port -ack) can be used at a time.\n\n");
     exit(1);
     }
    /* Did they give us a filename? */
@@ -183,7 +185,7 @@ exit(0);
 
 void forgepacket(unsigned int source_addr, unsigned int dest_addr, unsigned 
 short source_port, unsigned short dest_port, char *filename, int server, int ipid
-, int seq, int ack) 
+, int seq, int port, int ack) 
 {
    struct send_tcp
    {
@@ -430,9 +432,15 @@ else
 			else if (seq==1)
 			{
         		printf("Receiving Data: %c\n",recv_pkt.tcp.seq);
-			fprintf(output,"%c",recv_pkt.tcp.seq); 
+			   fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
+         else if (port==1)
+         {
+            printf("Receiving Data: %c\n",recv_pkt.tcp.source);
+			   fprintf(output,"%c",recv_pkt.tcp.source); 
+   			fflush(output);
+         }
 			/* Do the bounce decode again... */
 			else if (ack==1)
 			{
@@ -545,6 +553,7 @@ void usage(char *progname)
       printf("[Encode Type] - Optional encoding type\n");
       printf("-ipid - Encode data a byte at a time in the IP packet ID. [DEFAULT]\n");
       printf("-seq  - Encode data a byte at a time in the packet sequence number.\n");
+      printf("-port - Encode data with ASCII code in source ports.\n")
       printf("-ack  - DECODE data a byte at a time from the ACK field.\n");
       printf("        This ONLY works from server mode and is made to decode\n");
       printf("        covert channel packets that have been bounced off a remote\n");
