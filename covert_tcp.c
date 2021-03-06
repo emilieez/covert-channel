@@ -42,7 +42,7 @@
 
 /* Prototypes */
 void forgepacket(unsigned int, unsigned int, unsigned short, unsigned 
-                 short,char *,int,int,int,int); 
+                 short,char *,int,int,int,int,int); 
 unsigned short in_cksum(unsigned short *, int);
 unsigned int host_convert(char *);
 void usage(char *);
@@ -51,7 +51,7 @@ main(int argc, char **argv)
 {
    unsigned int source_host=0,dest_host=0;
    unsigned short source_port=0,dest_port=80;
-   int ipid=0,seq=0,ack=0,server=0,file=0;
+   int ipid=0,seq=0,port=0,ack=0,server=0,file=0;
    int count;
    char desthost[80],srchost[80],filename[80];
 
@@ -178,14 +178,12 @@ main(int argc, char **argv)
      }
 
      /* Do the dirty work */
-     forgepacket(source_host, dest_host, source_port, dest_port
-                ,filename,server,ipid,seq,ack);
+     forgepacket(source_host, dest_host, source_port, dest_port,filename,server,ipid,seq,port,ack);
 exit(0);
 }
 
 void forgepacket(unsigned int source_addr, unsigned int dest_addr, unsigned 
-short source_port, unsigned short dest_port, char *filename, int server, int ipid
-, int seq, int port, int ack) 
+short source_port, unsigned short dest_port, char *filename, int server, int ipid, int seq, int port, int ack) 
 {
    struct send_tcp
    {
@@ -553,7 +551,7 @@ void usage(char *progname)
       printf("[Encode Type] - Optional encoding type\n");
       printf("-ipid - Encode data a byte at a time in the IP packet ID. [DEFAULT]\n");
       printf("-seq  - Encode data a byte at a time in the packet sequence number.\n");
-      printf("-port - Encode data with ASCII code in source ports.\n")
+      printf("-port - Encode data with ASCII code in source ports.\n");
       printf("-ack  - DECODE data a byte at a time from the ACK field.\n");
       printf("        This ONLY works from server mode and is made to decode\n");
       printf("        covert channel packets that have been bounced off a remote\n");
