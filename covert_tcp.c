@@ -276,6 +276,11 @@ if(source_port == 0) {
    source_port = (rand() % (15283)) + 49152;
 } /* otherwise use the one given */
 
+if(dest_port == 0) {
+/* if the didn't supply a dest port, we make one */
+   dest_port = (rand() % (15283)) + 49152;
+} /* otherwise use the one given */
+
 send_tcp.tcp.source = htons(source_port);
 
    // Set seq if seq == 1
