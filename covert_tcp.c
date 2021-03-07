@@ -149,7 +149,7 @@ main(int argc, char **argv)
        else if(seq == 1)
         printf("Encoding Type   : IP Sequence Number\n");
        else if (port == 1)
-         print("Encoding Type   : IP Source/Dest Port Delta")
+         print("Encoding Type   : IP Source/Dest Port Delta");
        printf("\nClient Mode: Sending data.\n\n");
       }
      }
