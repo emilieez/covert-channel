@@ -390,6 +390,13 @@ else
 			fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
+         else if (port==1)
+         {
+            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
+            printf("Receiving Data: %c\n",ntohs(delta));
+			   fprintf(output,"%c",delta); 
+   			fflush(output);
+         }
         /* Use a bounced packet from a remote server to decode the data */
         /* This technique requires that the client initiates a SEND to */
         /* a remote host with a SPOOFED source IP that is the location */
