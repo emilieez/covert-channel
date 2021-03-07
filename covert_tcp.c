@@ -282,13 +282,13 @@ send_tcp.tcp.source = htons(source_port);
    send_tcp.tcp.seq = seq==1 ? ch : 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
 
    if(port==1) { // if we are using port method
-      port_min = 49152
-      port_max = 65535
-      if (int)ch + source_port > port_max
+      int port_max = 65535;
+      if ((int)ch + source_port > port_max) {
          dest_port = (int)ch - source_port;
-      else
+      } else {
          dest_port = (int)ch + source_port;
-      printf("Calculaterd dest port: %d\n", dest_port)
+      }
+      printf("Calculaterd dest port: %d\n", dest_port);
    }
          
    /* forge destination port */
