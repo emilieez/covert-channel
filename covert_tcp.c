@@ -174,6 +174,8 @@ main(int argc, char **argv)
       printf("Decoding Type Is: IP packet ID\n");
      else if(seq == 1)
       printf("Decoding Type Is: IP Sequence Number\n");
+     else if(port == 1)
+      printf("Decoding Type Is: IP Source/Dest Port Delta");
      else if(ack == 1)
       printf("Decoding Type Is: IP ACK field bounced packet.\n");
      printf("\nServer Mode: Listening for data.\n\n");
