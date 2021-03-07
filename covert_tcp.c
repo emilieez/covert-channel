@@ -110,7 +110,7 @@ main(int argc, char **argv)
    /* check the encoding flags */
    if(ipid+seq+port+ack == 0)
     ipid=1; /* set default encode type if none given */
-   else if (ipid+seq++port+ack !=1)
+   else if (ipid+seq+port+ack !=1)
     {
     printf("\n\nOnly one encoding/decode flag (-ipid -seq -port -ack) can be used at a time.\n\n");
     exit(1);
