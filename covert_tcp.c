@@ -439,8 +439,9 @@ else
 			}
          else if (port==1)
          {
-            printf("Receiving Data: %c\n",recv_pkt.tcp.source);
-			   fprintf(output,"%c",recv_pkt.tcp.source); 
+            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source)
+            printf("Receiving Data: %c\n",delta);
+			   fprintf(output,"%c",delta); 
    			fflush(output);
          }
 			/* Do the bounce decode again... */
