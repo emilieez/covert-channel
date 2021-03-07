@@ -283,7 +283,7 @@ if(seq==1)
 else
    send_tcp.tcp.seq = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
    dest_port = 49152 + ((int)ch - (65535 - source_port)) - 1; 
-   printf("%d", dest_port)     
+   printf("%d", dest_port);     
 
    /* forge destination port */
    send_tcp.tcp.dest = htons(dest_port);
