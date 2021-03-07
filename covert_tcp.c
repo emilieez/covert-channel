@@ -271,15 +271,20 @@ else /* otherwise we "encode" it with our cheesy algorithm */
    send_tcp.ip.daddr = dest_addr;
 
 /* begin forged TCP header */
-if(source_port == 0) /* if the didn't supply a source port, we make one */
-   send_tcp.tcp.source = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
-else /* otherwise use the one given */
-   send_tcp.tcp.source = htons(source_port);
+if(source_port == 0) {
+/* if the didn't supply a source port, we make one */
+   source_port = (rand() % (15283)) + 49152;
+} /* otherwise use the one given */
+
+send_tcp.tcp.source = htons(source_port);
 
 if(seq==0) /* if we are not encoding the value into the seq number */
    send_tcp.tcp.seq = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
 else /* otherwise we'll hide the data using our cheesy algorithm one more time. */
-   send_tcp.tcp.seq = ch;
+   if(port==0) /* if we are not encoding the value into source/dest ports */
+      send_tcp.tcp.seq = ch;
+   else
+      dest_port = 49152 + ((int)ch - (65535 - source_port)) - 1;      
 
    /* forge destination port */
    send_tcp.tcp.dest = htons(dest_port);
