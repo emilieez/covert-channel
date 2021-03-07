@@ -108,7 +108,7 @@ main(int argc, char **argv)
     }
 
    /* check the encoding flags */
-   if(ipid+seq+ack == 0)
+   if(ipid+seq+port+ack == 0)
     ipid=1; /* set default encode type if none given */
    else if (ipid+seq+ack !=1)
     {
