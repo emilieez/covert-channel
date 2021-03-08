@@ -43,7 +43,7 @@
 
 /* Prototypes */
 void forgepacket(unsigned int, unsigned int, unsigned short, unsigned 
-                 short,char *,int,int,int,int,int); 
+                 short,char *,int,int,int,int,int,bool,bool); 
 unsigned short in_cksum(unsigned short *, int);
 unsigned int host_convert(char *);
 void usage(char *);
@@ -51,7 +51,7 @@ void usage(char *);
 main(int argc, char **argv)
 {
    unsigned int source_host=0,dest_host=0;
-   unsigned short source_port=0,dest_port=80;
+   unsigned short source_port=0,dest_port=0;
    int ipid=0,seq=0,port=0,ack=0,server=0,file=0;
    int count;
    char desthost[80],srchost[80],filename[80];
@@ -116,6 +116,15 @@ main(int argc, char **argv)
     printf("\n\nOnly one encoding/decode flag (-ipid -seq -port -ack) can be used at a time.\n\n");
     exit(1);
     }
+
+   if(port && source_port && dest_port) {
+      printf("\n\n You can only supply at most 1 of source and dest port for port encoding type\n\n");
+      exit(1);
+   }
+
+   bool supplied_source_port = source_port;
+   bool supplied_dest_port = dest_port;
+
    /* Did they give us a filename? */
    if(file != 1)
     {
@@ -183,12 +192,12 @@ main(int argc, char **argv)
      }
 
      /* Do the dirty work */
-     forgepacket(source_host, dest_host, source_port, dest_port,filename,server,ipid,seq,port,ack);
+     forgepacket(source_host, dest_host, source_port, dest_port,filename,server,ipid,seq,port,ack, supplied_source_port, supplied_dest_port);
 exit(0);
 }
 
 void forgepacket(unsigned int source_addr, unsigned int dest_addr, unsigned 
-short source_port, unsigned short dest_port, char *filename, int server, int ipid, int seq, int port, int ack) 
+short source_port, unsigned short dest_port, char *filename, int server, int ipid, int seq, int port, int ack, bool supplied_source_port, bool supplied_dest_port) 
 {
    struct send_tcp
    {
@@ -272,15 +281,13 @@ else /* otherwise we "encode" it with our cheesy algorithm */
    send_tcp.ip.daddr = dest_addr;
 
 /* begin forged TCP header */
-bool supplied_source_port = source_port;
-bool supplied_dest_port = dest_port;
 if(source_port == 0) {
 /* if the didn't supply a source port, we make one */
    source_port = (rand() % (15283)) + 49152;
 } /* otherwise use the one given */
-else if(dest_port == 0) {
-/* if the didn't supply a dest port, we make one */
-   dest_port = (rand() % (15283)) + 49152;
+if(dest_port == 0) {
+/* if the didn't supply a dest port, default to use 80 */
+   dest_port = 80;
 } /* otherwise use the one given */
 
    // Set seq if seq == 1
