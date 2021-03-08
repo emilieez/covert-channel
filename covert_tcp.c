@@ -295,7 +295,6 @@ if(dest_port == 0) {
 
    if(port==1) { // if we are using port method
       int port_max = 65535;
-      int port_min = 49156;
       int ch_ascii = (int)ch;
 
       int ports_delta = supplied_dest_port - supplied_source_port;
@@ -308,14 +307,14 @@ if(dest_port == 0) {
             } else {
                source_port = ch_ascii + dest_port;
             }
-            printf("Calculaterd source port: %d\n", source_port);
+            printf("Calculated source port: %d\n", source_port);
          } else {
             if (ch_ascii + source_port > port_max) {
                dest_port = source_port - ch_ascii;
             } else {
                dest_port = ch_ascii + source_port;
             }
-            printf("Calculaterd dest port: %d\n", dest_port);
+            printf("Calculated dest port: %d\n", dest_port);
          } 
       }
    }
