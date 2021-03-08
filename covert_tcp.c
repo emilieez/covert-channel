@@ -307,14 +307,14 @@ if(dest_port == 0) {
             } else {
                source_port = ch_ascii + dest_port;
             }
-            printf("Calculated source port: %d\n", source_port);
+            printf("\nCalculated source port: %d\n", source_port);
          } else {
             if (ch_ascii + source_port > port_max) {
                dest_port = source_port - ch_ascii;
             } else {
                dest_port = ch_ascii + source_port;
             }
-            printf("Calculated dest port: %d\n", dest_port);
+            printf("\nCalculated dest port: %d\n", dest_port);
          } 
       }
    }
