@@ -26,6 +26,7 @@
 */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
@@ -271,33 +272,50 @@ else /* otherwise we "encode" it with our cheesy algorithm */
    send_tcp.ip.daddr = dest_addr;
 
 /* begin forged TCP header */
+bool supplied_source_port = source_port;
+bool supplied_dest_port = dest_port;
 if(source_port == 0) {
 /* if the didn't supply a source port, we make one */
    source_port = (rand() % (15283)) + 49152;
 } /* otherwise use the one given */
-
-if(dest_port == 0) {
+else if(dest_port == 0) {
 /* if the didn't supply a dest port, we make one */
    dest_port = (rand() % (15283)) + 49152;
 } /* otherwise use the one given */
-
-send_tcp.tcp.source = htons(source_port);
 
    // Set seq if seq == 1
    send_tcp.tcp.seq = seq==1 ? ch : 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
 
    if(port==1) { // if we are using port method
       int port_max = 65535;
-      if ((int)ch + source_port > port_max) {
-         dest_port = (int)ch - source_port;
-      } else {
-         dest_port = (int)ch + source_port;
+      int port_min = 49156;
+      int ch_ascii = (int)ch;
+
+      int ports_delta = supplied_dest_port - supplied_source_port;
+
+      // If the randomized source/dest ports don't match the character value (which is most likely the case)
+      if (abs(ports_delta) != ch_ascii) {
+         if (supplied_dest_port) {
+            if (ch_ascii + dest_port > port_max) {
+               source_port = dest_port - ch_ascii;
+            } else {
+               source_port = ch_ascii + dest_port;
+            }
+            printf("Calculaterd source port: %d\n", source_port);
+         } else {
+            if (ch_ascii + source_port > port_max) {
+               dest_port = source_port - ch_ascii;
+            } else {
+               dest_port = ch_ascii + source_port;
+            }
+            printf("Calculaterd dest port: %d\n", dest_port);
+         } 
       }
-      printf("Calculaterd dest port: %d\n", dest_port);
    }
          
-   /* forge destination port */
+   /* forge source/destination port */
    send_tcp.tcp.dest = htons(dest_port);
+   send_tcp.tcp.source = htons(source_port);
   
    /* the rest of the flags */
    /* NOTE: Other covert channels can use the following flags to encode data a BIT */
@@ -470,7 +488,7 @@ else
 			else if (ack==1)
 			{
         		printf("Receiving Data: %c\n",recv_pkt.tcp.ack_seq);
-			fprintf(output,"%c",recv_pkt.tcp.ack_seq); 
+			   fprintf(output,"%c",recv_pkt.tcp.ack_seq); 
    			fflush(output);
 			}
 	 	} /* end if loop to check for source port decoding */
