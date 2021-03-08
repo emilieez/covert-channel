@@ -428,7 +428,7 @@ else
          else if (port==1)
          {
             int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            delta = ntohs(delta)
+            delta = ntohs(delta);
             printf("Receiving Data: %c\n",delta);
 			   fprintf(output,"%c",delta); 
    			fflush(output);
