@@ -484,10 +484,12 @@ else
 			   fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
+            /* IP source/dest ports decoding*/
          else if (port==1)
-         {
+         { /* Convert the differences between source/dest port from ASCII to char */
             int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            printf("Receiving Data: %c\n",ntohs(delta));
+            delta = ntohs(delta);
+            printf("Receiving Data: %c\n",delta);
 			   fprintf(output,"%c",delta); 
    			fflush(output);
          }
