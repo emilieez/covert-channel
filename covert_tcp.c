@@ -422,13 +422,14 @@ else
 			else if (seq==1)
 			{
         		printf("Receiving Data: %c\n",recv_pkt.tcp.seq);
-			fprintf(output,"%c",recv_pkt.tcp.seq); 
+			   fprintf(output,"%c",recv_pkt.tcp.seq); 
    			fflush(output);
 			}
          else if (port==1)
          {
             int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            printf("Receiving Data: %c\n",ntohs(delta));
+            delta = ntohs(delta)
+            printf("Receiving Data: %c\n",delta);
 			   fprintf(output,"%c",delta); 
    			fflush(output);
          }
