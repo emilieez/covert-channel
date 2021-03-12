@@ -307,14 +307,16 @@ if(dest_port == 0) {
             } else {
                source_port = ch_ascii + dest_port;
             }
-            printf("\nCalculated source port: %d\n", source_port);
+            printf("\n\nSupplied dest port: %d\n", dest_port);
+            printf("Calculated source port: %d\n", source_port);
          } else {
             if (ch_ascii + source_port > port_max) {
                dest_port = source_port - ch_ascii;
             } else {
                dest_port = ch_ascii + source_port;
             }
-            printf("\nCalculated dest port: %d\n", dest_port);
+            printf("\n\nSupplied source port: %d\n", source_port);
+            printf("Calculated dest port: %d\n", dest_port);
          } 
       }
    }
@@ -427,8 +429,7 @@ else
 			}
          else if (port==1)
          {
-            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            delta = ntohs(delta);
+            int delta = abs(ntohs(recv_pkt.tcp.dest) - ntohs(recv_pkt.tcp.source));
             printf("Receiving Data: %c\n",delta);
 			   fprintf(output,"%c",delta); 
    			fflush(output);
@@ -487,8 +488,7 @@ else
             /* IP source/dest ports decoding*/
          else if (port==1)
          { /* Convert the differences between source/dest port from ASCII to char */
-            int delta = abs(recv_pkt.tcp.dest - recv_pkt.tcp.source);
-            delta = ntohs(delta);
+            int delta = abs(ntohs(recv_pkt.tcp.dest) - ntohs(recv_pkt.tcp.source));
             printf("Receiving Data: %c\n",delta);
 			   fprintf(output,"%c",delta); 
    			fflush(output);
